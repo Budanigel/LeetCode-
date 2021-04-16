@@ -1,0 +1,70 @@
+Leetcode 数据库-184. 每个部门工资最高的员工
+题目描述省略。
+
+
+第一次执行代码（失败）：
+ 
+ ```
+   SELECT 
+        dep.name      AS   Department，
+        emp.name                   AS   Employee,
+       MAX( emp.salary)         AS   Salary		
+      FROM  employee emp
+LEFT JOIN  department dep 
+         ON  emp.departmentid = dep.id
+  GROUP BY 	dep.name  ,emp.name    
+```
+
+这次执行结果完全与系统预期结果不符。按照这段代码出来的结果是每个部门每个名字的最高工资，与每个部门最高工资相去甚远。
+查看官方解题思路之后，理解官方解题思路：第一步选出每个部门的最高工资数额及对应部门ID，形成临时表；第二步将部门ID和工资数存在于临时表中的记录筛选出即可，
+此处用的是IN语法，多个字段IN临时表，类似于一个数组的样子。平时写Hive没有用到过这个语法，LeetCode这里我选用MySQL支持这个用法。
+
+
+第二次执行代码（成功），提交（失败）：
+  SELECT 
+        dep.name      AS   Department,
+        emp.name     AS   Employee,
+       emp.salary      AS   Salary		
+      FROM  employee emp
+LEFT  JOIN  department dep 
+         ON  emp.departmentid = dep.id
+WHERE  (dep.departmentid, emp.salary)
+       IN    ( SELECT  departmentid, max(salary) 
+	               FROM  employee
+		GROUP  BY	departmentid)	  
+
+此次执行没有问题，但是提交出错，第一次提交以为是网络原因或者其他，第二次提交依然报错，查看错误原因发现有一行有个字段值为NULL。
+再次查看官方解题，发现用的是join ，而我用的是left join，导致存在右表为空的记录，改为 join 之后执行提交成功，可见MySQL中 join 即inner join。
+
+第三次执行代码（成功），提交（成功）：
+  SELECT 
+        dep.name      AS   Department,
+        emp.name     AS   Employee,
+       emp.salary      AS   Salary		
+      FROM  employee emp
+       JOIN  department dep 
+         ON  emp.departmentid = dep.id
+WHERE  (dep.departmentid, emp.salary)
+       IN    ( SELECT  departmentid, max(salary) 
+	               FROM  employee
+		GROUP  BY	departmentid)	   
+		
+完。
+		
+		SELECT
+    Department.name AS 'Department',
+    Employee.name AS 'Employee',
+    Salary
+FROM
+    Employee
+        JOIN
+    Department ON Employee.DepartmentId = Department.Id
+WHERE
+    (Employee.DepartmentId , Salary) IN
+    (   SELECT
+            DepartmentId, MAX(Salary)
+        FROM
+            Employee
+        GROUP BY DepartmentId
+	)
+
