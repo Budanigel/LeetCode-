@@ -3,8 +3,6 @@ Leetcode 数据库-184. 每个部门工资最高的员工
 
 
 第一次执行代码（失败）：
- 
- ```
    SELECT 
         dep.name      AS   Department，
         emp.name                   AS   Employee,
@@ -13,7 +11,6 @@ Leetcode 数据库-184. 每个部门工资最高的员工
 LEFT JOIN  department dep 
          ON  emp.departmentid = dep.id
   GROUP BY 	dep.name  ,emp.name    
-```
 
 这次执行结果完全与系统预期结果不符。按照这段代码出来的结果是每个部门每个名字的最高工资，与每个部门最高工资相去甚远。
 查看官方解题思路之后，理解官方解题思路：第一步选出每个部门的最高工资数额及对应部门ID，形成临时表；第二步将部门ID和工资数存在于临时表中的记录筛选出即可，
